@@ -85,3 +85,23 @@ func UpdateTask(db *sql.DB, myTask models.Task) (rowsAffected int64, err error) 
 
 	return
 }
+
+// Delete a task entry in database
+func DeleteTask(db *sql.DB, taskID int) (rowsAffected int64, err error) {
+	sqlStatement := "DELETE FROM tasks WHERE id = $1"
+	result, err := db.Exec(
+		sqlStatement,
+		taskID,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	rowsAffected, err = result.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}

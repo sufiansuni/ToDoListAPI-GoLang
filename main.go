@@ -30,7 +30,7 @@ func StartHTTPServer() {
 	r.HandleFunc("/api/v1/tasks/{taskID}", handlers.UpdateTask).Methods("PATCH")
 
 	// REST: Delete
-	// r.HandleFunc("/api/v1/tasks/{taskID}", handlers.DeleteTask).Methods("DELETE")
+	r.HandleFunc("/api/v1/tasks/{taskID}", handlers.DeleteTask).Methods("DELETE")
 
 	// Serve the server at port 8080, log fatals
 	log.Fatal(http.ListenAndServe(":8080", r))

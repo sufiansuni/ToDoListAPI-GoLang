@@ -144,3 +144,52 @@ func UpdateTask(res http.ResponseWriter, req *http.Request) {
 	}
 	json.NewEncoder(res).Encode(jsonResponse)
 }
+
+// Task CRUD: Delete
+func DeleteTask(res http.ResponseWriter, req *http.Request) {
+	if !validKey(req) {
+		res.WriteHeader(http.StatusUnauthorized)
+		res.Write([]byte("401 - Invalid key"))
+		return
+	}
+	
+	var jsonResponse interface{}
+
+	vars := mux.Vars(req)
+	taskID, err := strconv.Atoi(vars["taskID"])
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Deleting Task of ID:", taskID)
+
+	// Delete DB entry
+	rowsAffected, err := database.DeleteTask(database.DB, taskID)
+	if rowsAffected > 0 {
+		jsonResponse = struct {
+			Message string
+			TaskID    int
+			}{
+				"Task Deleted",
+				taskID,
+			}
+	} else {
+		jsonResponse = struct {
+			Message string
+		}{
+			"No Task Found",
+		}
+	}
+
+	if err != nil {
+		jsonResponse = struct {
+			Message string
+			Error   error
+		}{
+			"Error While Deleting Task",
+			err,
+		}
+	}
+
+	json.NewEncoder(res).Encode(jsonResponse)
+}
