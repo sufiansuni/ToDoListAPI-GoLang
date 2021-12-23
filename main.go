@@ -21,10 +21,10 @@ func StartHTTPServer() {
 	r.HandleFunc("/api/v1/tasks", handlers.CreateTask).Methods("POST")
 
 	// REST: ReadAll
-	// r.HandleFunc("/api/v1/tasks", handlers.ReadAllTasks).Methods("GET")
+	r.HandleFunc("/api/v1/tasks", handlers.ReadAllTasks).Methods("GET")
 
 	// REST: ReadOne
-	// r.HandleFunc("/api/v1/tasks/{taskID}", handlers.ReadTask).Methods("GET")
+	r.HandleFunc("/api/v1/tasks/{taskID}", handlers.ReadTask).Methods("GET")
 
 	// REST: Update
 	r.HandleFunc("/api/v1/tasks/{taskID}", handlers.UpdateTask).Methods("PATCH")

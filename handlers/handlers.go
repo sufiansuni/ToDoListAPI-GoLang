@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -83,7 +84,7 @@ func UpdateTask(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte("401 - Invalid key"))
 		return
 	}
-	
+
 	var myTask models.Task
 	var jsonResponse interface{}
 
@@ -120,10 +121,10 @@ func UpdateTask(res http.ResponseWriter, req *http.Request) {
 			jsonResponse = struct {
 				Message string
 				Task    models.Task
-				}{
-					"Task Updated",
-					myTask,
-				}
+			}{
+				"Task Updated",
+				myTask,
+			}
 		} else {
 			jsonResponse = struct {
 				Message string
@@ -152,7 +153,7 @@ func DeleteTask(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte("401 - Invalid key"))
 		return
 	}
-	
+
 	var jsonResponse interface{}
 
 	vars := mux.Vars(req)
@@ -168,11 +169,11 @@ func DeleteTask(res http.ResponseWriter, req *http.Request) {
 	if rowsAffected > 0 {
 		jsonResponse = struct {
 			Message string
-			TaskID    int
-			}{
-				"Task Deleted",
-				taskID,
-			}
+			TaskID  int
+		}{
+			"Task Deleted",
+			taskID,
+		}
 	} else {
 		jsonResponse = struct {
 			Message string
@@ -187,6 +188,86 @@ func DeleteTask(res http.ResponseWriter, req *http.Request) {
 			Error   error
 		}{
 			"Error While Deleting Task",
+			err,
+		}
+	}
+
+	json.NewEncoder(res).Encode(jsonResponse)
+}
+
+// Task CRUD: Read (One)
+func ReadTask(res http.ResponseWriter, req *http.Request) {
+	if !validKey(req) {
+		res.WriteHeader(http.StatusUnauthorized)
+		res.Write([]byte("401 - Invalid key"))
+		return
+	}
+
+	var jsonResponse interface{}
+
+	vars := mux.Vars(req)
+	taskID, err := strconv.Atoi(vars["taskID"])
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Getting Task of ID:", taskID)
+
+	// Select DB entry
+	myTask, err := database.SelectTask(database.DB, taskID)
+	if myTask.ID > 0 {
+		jsonResponse = struct {
+			Task models.Task
+		}{
+			myTask,
+		}
+	} else {
+		jsonResponse = struct {
+			Message string
+		}{
+			"No Task Found",
+		}
+	}
+
+	if err != nil && err != sql.ErrNoRows{
+		jsonResponse = struct {
+			Message string
+			Error   error
+		}{
+			"Error While Getting Task",
+			err,
+		}
+	}
+
+	json.NewEncoder(res).Encode(jsonResponse)
+}
+
+// Task CRUD: Read (One)
+func ReadAllTasks(res http.ResponseWriter, req *http.Request) {
+	if !validKey(req) {
+		res.WriteHeader(http.StatusUnauthorized)
+		res.Write([]byte("401 - Invalid key"))
+		return
+	}
+
+	var jsonResponse interface{}
+
+	fmt.Println("Getting All Tasks")
+
+	// Select All Tasks from DB
+	myTasks, err := database.SelectAllTasks(database.DB)
+	jsonResponse = struct {
+		Tasks []models.Task
+	}{
+		myTasks,
+	}
+	
+	if err != nil && err != sql.ErrNoRows{
+		jsonResponse = struct {
+			Message string
+			Error   error
+		}{
+			"Error While Getting All Tasks",
 			err,
 		}
 	}

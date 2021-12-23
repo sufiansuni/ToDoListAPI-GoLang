@@ -105,3 +105,44 @@ func DeleteTask(db *sql.DB, taskID int) (rowsAffected int64, err error) {
 
 	return
 }
+
+// Selects ONE task entry in database
+func SelectTask(db *sql.DB, taskID int) (myTask models.Task, err error) {
+	sqlStatement := "SELECT id, name, done FROM tasks WHERE id=$1"
+	err = db.QueryRow(sqlStatement, taskID).Scan(
+		&myTask.ID,
+		&myTask.Name,
+		&myTask.Done,
+	)
+
+	if err != nil && err != sql.ErrNoRows {
+		panic(err)
+	}
+
+	return
+}
+
+// Selects ALL task entries in database
+func SelectAllTasks(db *sql.DB) (myTasks []models.Task, err error) {
+	rows, err := db.Query("SELECT id, name, done FROM tasks")
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var newTask models.Task
+		err = rows.Scan(&newTask.ID, &newTask.Name, &newTask.Done)
+		if err != nil {
+			panic(err)
+		}
+		myTasks = append(myTasks, newTask)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}
